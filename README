@@ -1,1 +1,7 @@
-THIS is a README
+README
+
+If not compiling, download libudev from Synaptic Package Manager
+
+To compile: 
+add -ludev
+must execute as root
