@@ -1,10 +1,9 @@
 
-/*******************************************
- Reading USB Data
+/******************************************
+ Reading USB Data from Emotiv 
  William Pan, Jordan Romvary, Katherine Liu
  May be used for any purpose.
- 
-*******************************************/
+******************************************/
 
 #include "usb-read.h"
 #include "emo-aes.h"
@@ -13,23 +12,23 @@ const char *bus_str(int bus);
 
 int main(int argc, char **argv)
 {
-	int BLOCKS = 1e6, PRINT = 0, i;
-  
+	int BLOCKS = 1e6, PRINT = 0;
 	argc--; argv++;
 	while (argc > 0) 
-    	{
-  	      if ((*argv)[0] == '-') 
-  	     	{
-  	     	    if (!strcmp(*argv, "-help")) { printf("Usage: AES [-trials N] [-print]"); exit(0); }
-  	     	    else if (!strcmp(*argv, "-trials")) { argc--; argv++; BLOCKS = atoi(*argv); }
-  	     	    else if (!strcmp(*argv, "-print")) { PRINT = 1; }
-  	     	    else { fprintf(stderr, "Invalid program argument: %s", *argv); exit(0); }
-  	     	}
+    {
+        if ((*argv)[0] == '-') 
+        {
+            if (!strcmp(*argv, "-help")) { printf("Usage: AES [-trials N] [-print]"); exit(0); }
+            else if (!strcmp(*argv, "-trials")) { argc--; argv++; BLOCKS = atoi(*argv); }
+            else if (!strcmp(*argv, "-print")) { PRINT = 1; }
+            else { fprintf(stderr, "Invalid program argument: %s", *argv); exit(0); }
+        }
+
         argv++; 
         argc--;
 	}
 
-    int fd;
+	int fd;
 	//Open the Device with non-blocking reads. In real life,
 	//   don't use a hard coded path; use libudev instead. 
 	struct udev_device *dev;
@@ -55,7 +54,7 @@ int main(int argc, char **argv)
 	
 	if (fd > 0) {
 		int i, res, desc_size = 0;
-		char buf[256];
+		char buf[32];
 		struct hidraw_report_descriptor rpt_desc;
 		struct hidraw_devinfo info;
 
@@ -97,35 +96,17 @@ int main(int argc, char **argv)
 		if(res < 0) {perror("read");}
 		else {
 			printf("read() read %d bytes: \n",res);
-			while(++trial < BLOCKS)
+			while(1)
 			{
-			strncpy(in, &buf[0], 32);
-			int i = 0;
-			int j = 0;
-		
-		
-		
-			printf("\n");
-			Decrypt32(in,out,0);
-			uchar temp;
-			for(i = 0; i < 32; ++i)
-			{
-				/*
-				printf("%02x ", out[i]);
-				temp = 0x80;
-				for(j = 0; j < 8; j++)
+				strncpy(in,buf,32);
+				Decrypt32(in,out,PRINT);
+				int i = 0;
+				for(; i < 32 ; ++i)
 				{
-					if((out[i] & temp) > 0)
-						printf("1");
-					else 
-						printf("0");
-					temp >>= 1;
+					printf("%02x ",out[i]);
 				}
-				*/
-				printf("%02x ", out[i]);
-			}
-			printf("\n");
-			res = read(fd, buf, 32);
+				printf("\n\n");
+				res = read(fd, buf, 32);
 			}
 
 		}
@@ -159,4 +140,3 @@ bus_str(int bus)
 		break;
 	}
 }
-

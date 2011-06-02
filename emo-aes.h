@@ -5,8 +5,6 @@
 typedef unsigned char uchar;
 
 // Fill in actual key here
-
-//Research Key
 static const uchar ckey[] = "\x31\x00\x39\x54\x38\x10\x37\x42\x31\x00\x39\x48\x38\x00\x37\x50";
 
 void print(const char *str, uchar *in, uchar *out)
@@ -18,11 +16,11 @@ void print(const char *str, uchar *in, uchar *out)
     printf("%s\n", str);
     printf("Input:\t");
     for (i = 0; i < AES_BLOCK_SIZE; i++)
-        printf("%3x ", in[i]);
+        printf("%x", in[i]);
     printf("\n");
     printf("Output:\t");
     for (i = 0; i < AES_BLOCK_SIZE; i++)
-        printf("%3x ", out[i]);
+        printf("%x", out[i]);
     printf("\n\n");
 }
 

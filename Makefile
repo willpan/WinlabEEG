@@ -3,9 +3,9 @@ TARGET=emo-read
 INPUT_SRCS=emo-read.c
 INPUT_OBJS=$(INPUT_SRCS:.c=.o)
 
-CFLAGS=-I /usr/include/openssl/ -o $(TARGET)
+CFLAGS=-I /usr/include/openssl/ -ludev -o $(TARGET)
 DEBUG=-g
-LIBS=-lcrypto -ludev
+LIBS=-lcrypto
 
 all: $(INPUT_OBJS)
 	$(CC) $(CFLAGS) $(LIBS) $^
