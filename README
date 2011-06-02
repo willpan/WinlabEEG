@@ -1,7 +1,7 @@
-README
+The focus of this project is to create an open C library for processing EEG data.  We are currently working with the Emotiv EPOC, a commercial EEG device that is marketed as a gaming peripherel.  We have just accessed the raw unencrypted data (thanks to the guide that daeken provided) and are trying to make sense of the data.  
 
-If not compiling, download libudev from Synaptic Package Manager
+Required Libraries:
+libudev
+openssl
 
-To compile: 
-add -ludev
-must execute as root
+Note: The program does not discriminate very well between different USB-HID devices right now so if you want to guarantee you're getting the right data then only plug in the Emotiv.

@@ -1,11 +1,11 @@
 CC=gcc
-TARGET=AES_debug
-INPUT_SRCS=AES_debug.c
+TARGET=emo-read
+INPUT_SRCS=emo-read.c
 INPUT_OBJS=$(INPUT_SRCS:.c=.o)
 
-CFLAGS=-I /usr/include/openssl/ -ludev -o $(TARGET)
+CFLAGS=-I /usr/include/openssl/ -o $(TARGET)
 DEBUG=-g
-LIBS=-lcrypto
+LIBS=-lcrypto -ludev
 
 all: $(INPUT_OBJS)
 	$(CC) $(CFLAGS) $(LIBS) $^
