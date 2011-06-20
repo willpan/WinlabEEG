@@ -6,6 +6,8 @@ qmake
 Add -ludev and -lcrypto to LIBS in Makefile
 make
 
+If Makefile is already there just run make
+
 Required libraries:
 Udev
 Openssl
