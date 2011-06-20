@@ -1,11 +1,11 @@
-CC=gcc
-TARGET=emo-read
-INPUT_SRCS=emo-read.c
-INPUT_OBJS=$(INPUT_SRCS:.c=.o)
+CC=g++
+TARGET=main
+INPUT_SRCS=main.cpp emotiv.cpp
+INPUT_OBJS=$(INPUT_SRCS:.cpp=.o)
 
-CFLAGS=-I /usr/include/openssl/ -ludev -o $(TARGET)
+CFLAGS=-I /usr/include/openssl/-o $(TARGET)
 DEBUG=-g
-LIBS=-lcrypto
+LIBS=-lcrypto -ludev
 
 all: $(INPUT_OBJS)
 	$(CC) $(CFLAGS) $(LIBS) $^

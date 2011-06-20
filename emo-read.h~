@@ -1,0 +1,17 @@
+#ifndef EMO_READ_H
+#define EMO_READ_H
+
+#include "usb-read.h"
+#include "emo-aes.h"
+#include <queue>
+
+class emotiv
+{
+public:
+	emotiv();
+	queue<char *> BufferQueue;
+	
+
+};
+
+#endif
