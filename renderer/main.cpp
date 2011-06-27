@@ -24,16 +24,16 @@ int main(int argc, char *argv[])
 
 	
 	
-	//QVBoxLayout *layout = new QVBoxLayout;
+	QVBoxLayout *layout = new QVBoxLayout;
 	QHBoxLayout *buttonlayout = new QHBoxLayout;
 
 	buttonlayout->addWidget(pushbutton1);
 	buttonlayout->addWidget(pushbutton2);
-	//layout->addWidget(ticker);
-	//layout->addLayout(buttonlayout);
-	window->setLayout(buttonlayout);
+	layout->addWidget(render);
+	layout->addLayout(buttonlayout);
+	window->setLayout(layout);
 
 	window->show();
-	render->show();
+	//render->show();
     return app.exec();
 }
