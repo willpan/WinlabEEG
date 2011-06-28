@@ -7,11 +7,19 @@ Render::Render(QWidget *parent)
 {
   offset = 0;
   myTimerId = 0;
-  setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+  setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
   setAutoFillBackground(1);
-  connectEmotiv();
-  byteNum = 0;
-  unsigned char willKey[]="\x31\x00\x39\x54\x38\x10\x37\x42\x31\x00\x39\x48\x38\x00\x37\x50";
+  showAvg = FALSE;
+  setup();
+  pen.setWidth(1);
+  pen.setColor(Qt::blue);
+
+}
+
+void Render::setup()
+{
+  unsigned char willKey[]="\x31\x00\x39\x54\x38\x10\x37\x42"
+    "\x31\x00\x39\x48\x38\x00\x37\x50";
   setKey(willKey);
   unsigned char * temp;
   for(int size = 100; size >= 0; --size)
@@ -30,9 +38,8 @@ Render::Render(QWidget *parent)
       //Buffer9.append(temp[9]);
       //Buffer10.append(temp[10]);
       //Buffer11.append(temp[11]);
-	
     }
-  myTimerId = startTimer(waitTime);
+    myTimerId = startTimer(waitTime);
 }
 
 
@@ -44,14 +51,14 @@ QSize Render::sizeHint() const
 void Render::paintEvent(QPaintEvent * /* event */)
 {
   QPainter painter(this);
-	
-  if( offset % 500 == 0)
+  painter.setRenderHint(QPainter::Antialiasing);
+  if( offset % rectwidth == 0)
     {
       painter.setPen(Qt::black);
       painter.drawLine(width()-1,0,width()-1,height());
       offset = 0;
     } 
-  painter.setPen(Qt::blue);
+  painter.setPen(pen);
   unsigned char * temp = readBuffer();
   Buffer0.pop_front();
   Buffer1.pop_front();
@@ -79,9 +86,9 @@ void Render::paintEvent(QPaintEvent * /* event */)
   //Buffer10.append(temp[10]);
   //Buffer11.append(temp[11]);
 	
-  painter.drawLine(width()-scrollInt,3+Buffer0[98]/4,width(),3+Buffer0[99]/4);//Change this if Buffer size ever changes
-  painter.drawLine(width()-scrollInt,73+Buffer1[98]/4,width(),73+Buffer1[99]/4);//Change this if Buffer size ever changes
-  painter.drawLine(width()-scrollInt,143+Buffer2[98]/4,width(),143+Buffer2[99]/4);//Change this if Buffer size ever changes
+  painter.drawLine(width()-scrollInt,3+Buffer0[98]/4,width(),3+Buffer0[99]/4);
+  painter.drawLine(width()-scrollInt,73+Buffer1[98]/4,width(),73+Buffer1[99]/4);
+  painter.drawLine(width()-scrollInt,143+Buffer2[98]/4,width(),143+Buffer2[99]/4);
   painter.drawLine(width()-scrollInt,213+Buffer3[98]/4,width(),213+Buffer3[99]/4);
   painter.drawLine(width()-scrollInt,283+Buffer4[98]/4,width(),283+Buffer4[99]/4);
   painter.drawLine(width()-scrollInt,353+Buffer5[98]/4,width(),353+Buffer5[99]/4);
@@ -91,8 +98,25 @@ void Render::paintEvent(QPaintEvent * /* event */)
   //painter.drawLine(width()-scrollInt,633+Buffer9[98]/4,width(),633+Buffer9[99]/4);
   //painter.drawLine(width()-scrollInt,703+Buffer10[98]/4,width(),703+Buffer10[99]/4);
   //painter.drawLine(width()-scrollInt,773+Buffer11[98]/4,width(),773+Buffer11[99]/4);
-	
+  /*
+  painter.drawPoint(width()-scrollInt, Buffer0[99]/4);
+  painter.drawPoint(width()-scrollInt,73+Buffer1[99]/4);
+  painter.drawPoint(width()-scrollInt,143+Buffer2[99]/4);
+  painter.drawPoint(width()-scrollInt,213+Buffer3[99]/4);
+  painter.drawPoint(width()-scrollInt,283+Buffer4[99]/4);
+  painter.drawPoint(width()-scrollInt,353+Buffer5[99]/4);
+  painter.drawPoint(width()-scrollInt,423+Buffer6[99]/4);
+  painter.drawPoint(width()-scrollInt,493+Buffer7[99]/4);
+  */
+  if(showAvg)
+    {
+      painter.setPen(Qt::red);
+      Avg.append(3*Avg[0]/4 + Buffer2[99]/4);
+      painter.drawLine(width()-scrollInt,143+Avg[0]/4,width(),143+Avg[1]/4);
+      Avg.pop_front();
+    }
 }
+
 
 
 void Render::timerEvent(QTimerEvent *event)
@@ -100,11 +124,8 @@ void Render::timerEvent(QTimerEvent *event)
   if (event->timerId() == myTimerId) {
     ++offset;
     //printf("offset= %d\n",offset);
-    if (offset >= rectwidth)
-      offset = 0;
     scroll(-scrollInt, 0);
   } else {
-    printf("else = %d\n",offset);
     QWidget::timerEvent(event);
   }
 }
@@ -128,13 +149,11 @@ bool Render::connectEmotiv()
       const char * path = udev_list_entry_get_name(dev_list_entry);
       dev = udev_device_new_from_syspath(udev,path);
     }
-
 	
   filedescriptor = open(udev_device_get_devnode(dev), O_RDONLY);
   if (filedescriptor > 0) 
     {
       res = read(filedescriptor, emotivBuffer, 32);
-      printf("%d\n",res);
       if(res < 0) {perror("read"); return false;}
       return true;
     }
@@ -173,4 +192,13 @@ void Render::Pause()
 void Render::Play()
 {
   myTimerId = startTimer(waitTime);
+}
+
+void Render::setShowAvg()
+{
+  showAvg = !showAvg;
+  if(showAvg)
+    {
+      Avg.append((Buffer2[99]+Buffer2[98]+Buffer2[97]+Buffer2[96])/4);
+    }
 }
