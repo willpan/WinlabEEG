@@ -1,6 +1,7 @@
-This focus of this project is to create an open C/C++ library for processing raw EEG data.  Our current testbed is the Emotiv EPOC, which we have cracked (thanks to daeken for his helpful guide) and are currently trying to make sense of.  
+This focus of this project is to create an open C/C++ library for processing raw EEG data.  Our current testbed is the Emotiv EPOC, which we are currently attempting to decipher.
 
 Renderer uses the Qt C++ Language extension so make sure you get that first.  Then run the following commands
+
 qmake -project
 qmake
 Add -ludev and -lcrypto to LIBS in Makefile

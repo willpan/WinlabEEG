@@ -5,11 +5,18 @@
 Render::Render(QWidget *parent)
   : QWidget(parent)
 {
+  printf("Setting up waveform displays\n");
+  printf("Initializing variables\n");
   offset = 0;
   myTimerId = 0;
-  setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
+  filedescriptor = 0;
+  printf("Fixing size policies\n");
+  //setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
+  printf("Setting Background\n");
   setAutoFillBackground(1);
+  printf("Toggling averaging\n");
   showAvg = FALSE;
+
   setup();
   pen.setWidth(1);
   pen.setColor(Qt::blue);
@@ -21,27 +28,27 @@ void Render::setup()
   unsigned char willKey[]="\x31\x00\x39\x54\x38\x10\x37\x42"
     "\x31\x00\x39\x48\x38\x00\x37\x50";
   setKey(willKey);
-  unsigned char * temp;
-  for(int size = 100; size >= 0; --size)
-    {
-      temp = readBuffer();
+  printf("Initializing vectors\n");
+  for(int x = 0; x < 100; ++x)
+    {      
+      Buffer0.append(0);
+      Buffer1.append(0);
+      Buffer2.append(0);
+      Buffer3.append(0);
+      Buffer4.append(0);
+      Buffer5.append(0);
+      Buffer6.append(0);
+      Buffer7.append(0);
       
-      Buffer0.append(temp[0]);
-      Buffer1.append(temp[1]);
-      Buffer2.append(temp[2]);
-      Buffer3.append(temp[3]);
-      Buffer4.append(temp[4]);
-      Buffer5.append(temp[5]);
-      Buffer6.append(temp[6]);
-      Buffer7.append(temp[7]);
       //Buffer8.append(temp[8]);
       //Buffer9.append(temp[9]);
       //Buffer10.append(temp[10]);
       //Buffer11.append(temp[11]);
     }
-    myTimerId = startTimer(waitTime);
+  printf("Starting timer\n");
+  myTimerId = startTimer(waitTime);
+  printf("Exiting setup\n");
 }
-
 
 QSize Render::sizeHint() const
 {
@@ -59,7 +66,7 @@ void Render::paintEvent(QPaintEvent * /* event */)
       offset = 0;
     } 
   painter.setPen(pen);
-  unsigned char * temp = readBuffer();
+ 
   Buffer0.pop_front();
   Buffer1.pop_front();
   Buffer2.pop_front();
@@ -73,19 +80,39 @@ void Render::paintEvent(QPaintEvent * /* event */)
   //Buffer10.pop_front();
   //Buffer11.pop_front();
 	
-  Buffer0.append(temp[0]);
-  Buffer1.append(temp[1]);
-  Buffer2.append(temp[2]);
-  Buffer3.append(temp[3]);
-  Buffer4.append(temp[4]);
-  Buffer5.append(temp[5]);
-  Buffer6.append(temp[6]);
-  Buffer7.append(temp[7]);
-  //Buffer8.append(temp[8]);
-  //Buffer9.append(temp[9]);
-  //Buffer10.append(temp[10]);
-  //Buffer11.append(temp[11]);
-	
+ if(filedescriptor != 0)
+    {
+      unsigned char * temp = readBuffer();
+  
+      Buffer0.append(temp[0]);
+      Buffer1.append(temp[1]);
+      Buffer2.append(temp[2]);
+      Buffer3.append(temp[3]);
+      Buffer4.append(temp[4]);
+      Buffer5.append(temp[5]);
+      Buffer6.append(temp[6]);
+      Buffer7.append(temp[7]);
+      //Buffer8.append(temp[8]);
+      //Buffer9.append(temp[9]);
+      //Buffer10.append(temp[10]);
+      //Buffer11.append(temp[11]);
+    }
+ else
+   {
+     Buffer0.append(0);
+     Buffer1.append(0);
+     Buffer2.append(0);
+     Buffer3.append(0);
+     Buffer4.append(0);
+     Buffer5.append(0);
+     Buffer6.append(0);
+     Buffer7.append(0);
+     //Buffer8.append(temp[8]);
+     //Buffer9.append(temp[9]);
+     //Buffer10.append(temp[10]);
+     //Buffer11.append(temp[11]);
+   }
+ 
   painter.drawLine(width()-scrollInt,3+Buffer0[98]/4,width(),3+Buffer0[99]/4);
   painter.drawLine(width()-scrollInt,73+Buffer1[98]/4,width(),73+Buffer1[99]/4);
   painter.drawLine(width()-scrollInt,143+Buffer2[98]/4,width(),143+Buffer2[99]/4);
@@ -98,16 +125,7 @@ void Render::paintEvent(QPaintEvent * /* event */)
   //painter.drawLine(width()-scrollInt,633+Buffer9[98]/4,width(),633+Buffer9[99]/4);
   //painter.drawLine(width()-scrollInt,703+Buffer10[98]/4,width(),703+Buffer10[99]/4);
   //painter.drawLine(width()-scrollInt,773+Buffer11[98]/4,width(),773+Buffer11[99]/4);
-  /*
-  painter.drawPoint(width()-scrollInt, Buffer0[99]/4);
-  painter.drawPoint(width()-scrollInt,73+Buffer1[99]/4);
-  painter.drawPoint(width()-scrollInt,143+Buffer2[99]/4);
-  painter.drawPoint(width()-scrollInt,213+Buffer3[99]/4);
-  painter.drawPoint(width()-scrollInt,283+Buffer4[99]/4);
-  painter.drawPoint(width()-scrollInt,353+Buffer5[99]/4);
-  painter.drawPoint(width()-scrollInt,423+Buffer6[99]/4);
-  painter.drawPoint(width()-scrollInt,493+Buffer7[99]/4);
-  */
+  
   if(showAvg)
     {
       painter.setPen(Qt::red);
@@ -123,7 +141,6 @@ void Render::timerEvent(QTimerEvent *event)
 {
   if (event->timerId() == myTimerId) {
     ++offset;
-    //printf("offset= %d\n",offset);
     scroll(-scrollInt, 0);
   } else {
     QWidget::timerEvent(event);
@@ -132,18 +149,19 @@ void Render::timerEvent(QTimerEvent *event)
 
 bool Render::connectEmotiv()
 {
+  printf("Finding drivers\n");
   /* Opens Emotiv if Emotiv is only HID Device attached */
   struct udev_device *dev;
   struct udev *udev;
   struct udev_list_entry *devices, *dev_list_entry;
   struct udev_enumerate *enumerate;
   udev = udev_new();
-	
+  printf("Sorting drivers\n");
   enumerate = udev_enumerate_new(udev);
   udev_enumerate_add_match_subsystem(enumerate, "hidraw");
   udev_enumerate_scan_devices(enumerate);
   devices = udev_enumerate_get_list_entry(enumerate);
-
+  printf("Retrieving file descriptors\n");
   udev_list_entry_foreach(dev_list_entry, devices) 
     {
       const char * path = udev_list_entry_get_name(dev_list_entry);
