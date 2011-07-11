@@ -29,8 +29,8 @@
 #include <libudev.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <locale.h>
-#include <unistd.h>
+//#include <locale.h>
+//#include <unistd.h>
 
 /* OpenSSL */
 
@@ -55,7 +55,11 @@ class Render : public QWidget
   QVector<int> Buffer5;
   QVector<int> Buffer6;
   QVector<int> Buffer7;
-  QVector<int> Avg;
+  QVector<int> Avg0;
+  QVector<int> Avg1;
+  QVector<int> Avg2;
+  QVector<int> Avg3;
+  QVector<int> Avg4;
   //QVector<int> Buffer8;
   //QVector<int> Buffer9;
   //QVector<int> Buffer10;
