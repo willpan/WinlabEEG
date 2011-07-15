@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'render.h'
 **
-** Created: Tue Jul 5 11:55:00 2011
+** Created: Fri Jul 15 10:46:41 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -32,17 +32,17 @@ static const uint qt_meta_data_Render[] = {
 
  // slots: signature, parameters, type, tag, flags
        8,    7,    7,    7, 0x0a,
-      16,    7,    7,    7, 0x0a,
-      23,    7,    7,    7, 0x0a,
-      36,    7,    7,    7, 0x0a,
-      49,    7,   44,    7, 0x0a,
+      21,    7,    7,    7, 0x0a,
+      34,    7,   29,    7, 0x0a,
+      50,    7,    7,    7, 0x0a,
+      58,    7,    7,    7, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_Render[] = {
-    "Render\0\0Pause()\0Play()\0setShowAvg()\0"
-    "setup()\0bool\0connectEmotiv()\0"
+    "Render\0\0setShowAvg()\0setup()\0bool\0"
+    "connectEmotiv()\0Pause()\0Play()\0"
 };
 
 const QMetaObject Render::staticMetaObject = {
@@ -74,12 +74,12 @@ int Render::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: Pause(); break;
-        case 1: Play(); break;
-        case 2: setShowAvg(); break;
-        case 3: setup(); break;
-        case 4: { bool _r = connectEmotiv();
+        case 0: setShowAvg(); break;
+        case 1: setup(); break;
+        case 2: { bool _r = connectEmotiv();
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 3: Pause(); break;
+        case 4: Play(); break;
         default: ;
         }
         _id -= 5;

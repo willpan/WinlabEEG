@@ -1,11 +1,17 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+#include <map>
+#include <utility>
+#include <vector>
+
 
 #include <QVector>
 #include <QWidget>
 #include <iostream>
 #include <QPen>
+
+#include <string.h>
 
 /* Linux */
 #include <linux/types.h>
@@ -27,10 +33,7 @@
 
 /* Libudev */
 #include <libudev.h>
-#include <stdio.h>
 #include <stdlib.h>
-//#include <locale.h>
-//#include <unistd.h>
 
 /* OpenSSL */
 
@@ -40,6 +43,8 @@
 #define scrollInt 2
 #define waitTime 5
 
+using namespace std;
+
 class Render : public QWidget
 {
   Q_OBJECT
@@ -47,6 +52,7 @@ class Render : public QWidget
     public:
   Render(QWidget *parent = 0);
   QSize sizeHint() const;
+  
   QVector<int> Buffer0;
   QVector<int> Buffer1;
   QVector<int> Buffer2;
@@ -55,29 +61,28 @@ class Render : public QWidget
   QVector<int> Buffer5;
   QVector<int> Buffer6;
   QVector<int> Buffer7;
+
   QVector<int> Avg0;
   QVector<int> Avg1;
   QVector<int> Avg2;
   QVector<int> Avg3;
   QVector<int> Avg4;
-  //QVector<int> Buffer8;
-  //QVector<int> Buffer9;
-  //QVector<int> Buffer10;
-  //QVector<int> Buffer11;
-  //int byteNum;
+  
+  map <string, vector<int> > SensorBits;
+  
 
   void setKey(unsigned char *);
-
  protected:
   void paintEvent(QPaintEvent *event);
   void timerEvent(QTimerEvent *event);
 
-  public slots:
-  void Pause();
-  void Play();
+ public slots:
+  //void update();
   void setShowAvg();
   void setup();
   bool connectEmotiv();
+  void Pause();
+  void Play();
 
  private:
   int offset;
@@ -91,6 +96,9 @@ class Render : public QWidget
   int res;
   unsigned char * readBuffer();
   bool showAvg;
+
+  //map < string , int > nodeData;
+  vector <int> nodeData;
 };
 
 #endif

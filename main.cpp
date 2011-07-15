@@ -1,5 +1,4 @@
 #include "emotiv.h"
-#include <iostream>
 
 int main()
 {

@@ -13,12 +13,12 @@ int main(int argc, char *argv[])
     QHBoxLayout * mainLayout = new QHBoxLayout;
     QVBoxLayout * leftLayout = new QVBoxLayout;
     QLabel titleLabel("<h2>Winlab<em>EEG</em></h2>"
-		      "<p>An open-source EEG GUI and<br />"
-		      "Pattern Detection Toolpak</p>"
-		      "<p>Brought to you by:<br/>"
-		      "William Pan<br/>"
-		      "Jordan Romvary<br/>"
-		      "Katherine Liu</p>");
+"<p>An open-source EEG GUI and<br />"
+"Pattern Detection Toolpak</p>"
+"<p>Brought to you by:<br/>"
+"William Pan<br/>"
+"Jordan Romvary<br/>"
+"Katherine Liu</p>");
    
     
     QTabWidget tabs;
@@ -30,18 +30,18 @@ int main(int argc, char *argv[])
     QPushButton *pushbutton3 = new QPushButton("Toggle Averaging");
 
     QObject::connect(pushbutton1, SIGNAL(clicked()),
-		     render, SLOT(Play()));
+render, SLOT(Play()));
     QObject::connect(pushbutton2, SIGNAL(clicked()),
-		     render, SLOT(Pause()));
+render, SLOT(Pause()));
     QObject::connect(pushbutton3, SIGNAL(clicked()),
-		     render, SLOT(setShowAvg()));
+render, SLOT(setShowAvg()));
 
     QVBoxLayout *layout = new QVBoxLayout;
     QHBoxLayout *buttonlayout = new QHBoxLayout;
    
     QPushButton * setupButton = new QPushButton("Connect");
     QObject::connect(setupButton, SIGNAL(clicked()),
-		     render,SLOT(connectEmotiv()));
+render,SLOT(connectEmotiv()));
 
     leftLayout->addWidget(&titleLabel);
     leftLayout->addWidget(setupButton);
@@ -64,3 +64,4 @@ int main(int argc, char *argv[])
     mainwindow->show();
     return app.exec();
 }
+

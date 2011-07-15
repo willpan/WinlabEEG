@@ -27,7 +27,6 @@ emotiv::emotiv()
 	if (filedescriptor > 0) 
 	{
 		res = read(filedescriptor, buffer, 32);
-		printf("%d\n",res);
 		if(res < 0) {perror("read");}
 	}
 	else 
