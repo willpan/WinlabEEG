@@ -9,6 +9,10 @@ make
 
 If Makefile is already there just run make
 
+To use:
+hit connect button, then the one you want.
+if switching, hit connect again and then select headset.
+
 Required libraries:
 Udev
 Openssl

@@ -3,8 +3,7 @@
 
 #include <map>
 #include <utility>
-#include <vector>
-
+#include <deque>
 
 #include <QVector>
 #include <QWidget>
@@ -14,16 +13,10 @@
 #include <string.h>
 
 /* Linux */
-#include <linux/types.h>
-#include <linux/input.h>
 #include <linux/hidraw.h>
 
 /* Unix */
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 
 /* C */
 #include <stdio.h>
@@ -36,7 +29,6 @@
 #include <stdlib.h>
 
 /* OpenSSL */
-
 #include <openssl/aes.h>
 
 #define rectwidth 129
@@ -49,29 +41,13 @@ class Render : public QWidget
 {
   Q_OBJECT
 
-    public:
+ public:
   Render(QWidget *parent = 0);
   QSize sizeHint() const;
-  
-  QVector<int> Buffer0;
-  QVector<int> Buffer1;
-  QVector<int> Buffer2;
-  QVector<int> Buffer3;
-  QVector<int> Buffer4;
-  QVector<int> Buffer5;
-  QVector<int> Buffer6;
-  QVector<int> Buffer7;
-
-  QVector<int> Avg0;
-  QVector<int> Avg1;
-  QVector<int> Avg2;
-  QVector<int> Avg3;
-  QVector<int> Avg4;
-  
-  map <string, vector<int> > SensorBits;
-  
-
+  deque<int> * Buffer[14];
+  map <string, deque<int> > SensorBits;
   void setKey(unsigned char *);
+ 
  protected:
   void paintEvent(QPaintEvent *event);
   void timerEvent(QTimerEvent *event);
@@ -83,11 +59,14 @@ class Render : public QWidget
   bool connectEmotiv();
   void Pause();
   void Play();
+  void setKey_Kat();
+  void setKey_Will();
 
  private:
   int offset;
   int myTimerId;
   QPen pen;
+  const int * offsets;
 
   unsigned char emotivBuffer[32];
   void decrypt(unsigned char *in, unsigned char *out);
@@ -97,8 +76,8 @@ class Render : public QWidget
   unsigned char * readBuffer();
   bool showAvg;
 
-  //map < string , int > nodeData;
-  vector <int> nodeData;
+  
+  deque <int> nodeData;
 };
 
 #endif
