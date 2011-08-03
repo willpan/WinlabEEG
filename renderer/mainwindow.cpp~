@@ -94,11 +94,15 @@ void mainwindow::play_pause_renderer()
 
 void mainwindow::connect_disconnect_server()
 {
-  renderer->connect_server();
   if( (renderer->server_connected) == 1)
-    connect_server->setText(tr("Disconnect from Server"));
+    {
+      connect_server->setText(tr("Disconnect from Server"));
+      renderer->connect_server();
+    }
   else
-    connect_server->setText(tr("Connect to Server"));
-  
+    {
+      connect_server->setText(tr("Connect to Server"));
+      renderer->connect_server();
+    }
       
 }
