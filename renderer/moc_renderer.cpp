@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'renderer.h'
 **
-** Created: Wed Aug 3 14:58:10 2011
+** Created: Thu Aug 11 12:14:03 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_Renderer[] = {
        5,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+       9,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -38,6 +38,8 @@ static const uint qt_meta_data_Renderer[] = {
       65,    9,    9,    9, 0x0a,
       78,    9,    9,    9, 0x0a,
       96,    9,   92,    9, 0x0a,
+     135,  113,    9,    9, 0x0a,
+     167,    9,    9,    9, 0x0a,
 
        0        // eod
 };
@@ -46,6 +48,9 @@ static const char qt_meta_stringdata_Renderer[] = {
     "Renderer\0\0setShowAvg()\0setup()\0bool\0"
     "connectEmotiv()\0play_pause()\0setKey_Kat()\0"
     "setKey_Will()\0int\0connect_server()\0"
+    "port_number,host_name\0"
+    "accept_options(int,const char*)\0"
+    "print_value_on_off()\0"
 };
 
 const QMetaObject Renderer::staticMetaObject = {
@@ -86,9 +91,11 @@ int Renderer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 5: setKey_Will(); break;
         case 6: { int _r = connect_server();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = _r; }  break;
+        case 7: accept_options((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< const char*(*)>(_a[2]))); break;
+        case 8: print_value_on_off(); break;
         default: ;
         }
-        _id -= 7;
+        _id -= 9;
     }
     return _id;
 }

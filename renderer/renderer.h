@@ -22,9 +22,10 @@
 #include <openssl/aes.h>     //Libcrypto
 #include <QMessageBox>
 
+
 #define rectwidth 129
-#define scrollInt 4
-#define WAIT_TIME 10
+#define scrollInt 2
+#define WAIT_TIME 5
 #define FIRST_CONNECT 0
 #define DISCONNECT 1
 #define RECONNECT  2
@@ -39,11 +40,14 @@ class Renderer : public QWidget
  public:
   Renderer(QWidget *parent = 0);
   QSize sizeHint() const;
-  deque<int> * Buffer[14];
+  map< string, deque<int> > Buffer;
   map <string, deque<int> > SensorBits;
   void setKey(unsigned char *);
   bool playing;
   int server_connected;
+  int * renderer_timer_id;
+  int gyro_x;
+  int gyro_y;
 
  protected:
   void paintEvent(QPaintEvent *event);
@@ -58,12 +62,15 @@ class Renderer : public QWidget
   void setKey_Kat();
   void setKey_Will();
   int connect_server();
-
+  void accept_options(int port_number , const char *host_name);
+  void print_value_on_off();
+  
  private:
+  map< string, deque<int> >::iterator it;
   int offset;
-  int myTimerId;
   QPen pen;
   const int * offsets;
+  bool print_values;
 
   unsigned char emotivBuffer[32];
   void decrypt(unsigned char *in, unsigned char *out);
@@ -80,6 +87,7 @@ class Renderer : public QWidget
   struct hostent *server;
   char message[32];
   void error(const char *);
+  
 };
 
 #endif

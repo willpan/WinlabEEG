@@ -9,21 +9,38 @@ mainwindow::mainwindow(QWidget *parent)
   renderer_layout = new QVBoxLayout;
   buttons_layout = new QHBoxLayout;
   renderer = new Renderer;
-  play_button = new QPushButton("Play");
+  play_button = new QPushButton("Pause");
   toggle_button = new QPushButton("Toggle Averaging");
   connect_button = new QPushButton("Connect Emotiv");
   connect_Kat = new QPushButton("Connect Kat's Headset");
   connect_Will = new QPushButton("Connect Will's Headset");
   connect_server = new QPushButton("Connect to Server");
+  server_options = new QPushButton("Server Options");
+  print_on_off = new QPushButton("Print values");
+  start_thread = new QPushButton("Start Thread");
+
+  gyro = new gyro_widget;
+
   tabs = new QTabWidget;
   page1 = new QWidget;
   page2 = new QWidget;
+  dialog = 0;
   setup_page1();
   setup_page2();
   tabs->addTab(page1, "Waveforms");
-  tabs->addTab(page2, "FFT");
+  tabs->addTab(page2, "Gyro");
   setup_mainwindow();
   this->setLayout(main_layout);
+  thread = 0;
+  renderer->renderer_timer_id = &timer;
+
+  gyro->gyro_timer_id = &timer;
+
+  gyro->gyro_x = &(renderer->gyro_x);
+  
+  gyro->gyro_y = &(renderer->gyro_y);
+
+  timer = startTimer(WAIT_TIME);
 }
 
 void mainwindow::setup_page1()
@@ -38,7 +55,7 @@ void mainwindow::setup_page1()
   
   QObject::connect(play_button,SIGNAL(clicked()),
 		   this, SLOT(play_pause_renderer()));
-   QObject::connect(toggle_button,SIGNAL(clicked()),
+  QObject::connect(toggle_button,SIGNAL(clicked()),
 		   renderer, SLOT(setShowAvg()));
   QObject::connect(connect_button, SIGNAL(clicked()),
 		   renderer, SLOT(connectEmotiv()));
@@ -48,13 +65,20 @@ void mainwindow::setup_page1()
 		   renderer, SLOT(setKey_Kat()));
   QObject::connect(connect_server, SIGNAL(clicked()),
 		   this, SLOT(connect_disconnect_server()));
+  QObject::connect(server_options, SIGNAL(clicked()),
+		   this, SLOT(set_options()));
+  QObject::connect(print_on_off, SIGNAL(clicked()),
+		   renderer, SLOT(print_value_on_off()));
+  QObject::connect(start_thread, SIGNAL(clicked()),
+		   this, SLOT(thread_do_stuff()));
 }
 
 void mainwindow::setup_page2()
 {
-  /*
-    Well nothing here yet
-  */
+  QVBoxLayout * gyro_layout = new QVBoxLayout;
+  gyro_layout->addWidget(gyro);
+  page2->setLayout(gyro_layout);
+ 
 }
 
 void mainwindow::setup_mainwindow()
@@ -72,6 +96,9 @@ void mainwindow::setup_mainwindow()
   left_layout->addWidget(connect_Will);
   left_layout->addWidget(connect_Kat);
   left_layout->addWidget(connect_server);
+  left_layout->addWidget(server_options);
+  left_layout->addWidget(print_on_off);
+  left_layout->addWidget(start_thread);
   left_layout->addStretch();
 
   main_layout->addLayout(left_layout);
@@ -99,6 +126,40 @@ void mainwindow::connect_disconnect_server()
     connect_server->setText(tr("Disconnect from Server"));
   else
     connect_server->setText(tr("Connect to Server"));
-  
-      
+}
+
+void mainwindow::set_options()
+{
+  if (!dialog)
+    {
+      dialog = new server_options_dialog(this);
+      QObject::connect(dialog, SIGNAL(accept_options(int, const char *)),
+		       renderer, SLOT(accept_options(int, const char *)));
+    }
+  dialog->show();
+  dialog->raise();
+  dialog->activateWindow();
+}
+
+void mainwindow::thread_do_stuff()
+{
+  if(thread == 0) 
+    {      
+      thread = new classifier_thread();
+      int i = 0;
+      cout << "Starting thread\n\n" << endl;
+      for( map< string, deque<int> >::iterator ii = renderer->SensorBits.begin();
+	   ii != renderer->SensorBits.end(); ii++)
+	{
+	  thread->sensor_data[(*ii).first].clear();
+	  thread->sensor_data[(*ii).first] = renderer->Buffer[(*ii).first];
+	  i++;
+	}
+      thread->start();
+    }
+  else
+    {
+      thread->~classifier_thread();
+      thread = 0;
+    }
 }

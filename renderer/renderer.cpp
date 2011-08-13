@@ -6,8 +6,11 @@ Renderer::Renderer(QWidget *parent)
   : QWidget(parent)
 {
   offset = 0;
-  myTimerId = 0;
+
   emotiv_fd = 0;
+  portno = 2000;
+  print_values = 0;
+  server = gethostbyname("localhost");//local host 192.168.207.89
   setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
   setAutoFillBackground(TRUE);
   showAvg = FALSE;
@@ -21,7 +24,6 @@ Renderer::Renderer(QWidget *parent)
 void Renderer::setup()
 {
   setKey_Will();
-  printf("Initializing vectors\n");
   //***********************New Stuff*********************//
 
   
@@ -53,37 +55,24 @@ void Renderer::setup()
 			  93 , 94 , 95, 80, 81, 82, 83};
   int sensorMask_FC5[] = {28, 29, 30, 31, 16, 17, 18,
 			  19, 20, 21, 22, 23, 8, 9};
+  
+  int copy = sizeof(sensorMask_F3)/sizeof(int);
 
-  deque<int> deque_F3(sensorMask_F3, 
-		      sensorMask_F3 + sizeof(sensorMask_F3)/sizeof(int));
-  deque<int> deque_FC6(sensorMask_FC6, 
-		       sensorMask_FC6 + sizeof(sensorMask_FC6)/sizeof(int));
-  deque<int> deque_P7(sensorMask_P7, 
-		      sensorMask_P7 + sizeof(sensorMask_P7)/sizeof(int));
-  deque<int> deque_T8(sensorMask_T8, 
-		      sensorMask_T8 + sizeof(sensorMask_T8)/sizeof(int));
-  deque<int> deque_F7(sensorMask_F7, 
-		      sensorMask_F7 + sizeof(sensorMask_F7)/sizeof(int));
-  deque<int> deque_F8(sensorMask_F8, 
-		      sensorMask_F8 + sizeof(sensorMask_F8)/sizeof(int));
-  deque<int> deque_T7(sensorMask_T7, 
-		      sensorMask_T7 + sizeof(sensorMask_T7)/sizeof(int));
-  deque<int> deque_P8(sensorMask_P8, 
-		      sensorMask_P8 + sizeof(sensorMask_P8)/sizeof(int));
-  deque<int> deque_AF4(sensorMask_AF4, 
-		       sensorMask_AF4 + sizeof(sensorMask_AF4)/sizeof(int));
-  deque<int> deque_F4(sensorMask_F4, 
-		      sensorMask_F4 + sizeof(sensorMask_F4)/sizeof(int));
-  deque<int> deque_AF3(sensorMask_AF3, 
-		       sensorMask_AF3 + sizeof(sensorMask_AF3)/sizeof(int));
-  deque<int> deque_O2(sensorMask_O2, 
-		      sensorMask_O2 + sizeof(sensorMask_O2)/sizeof(int));
-  deque<int> deque_O1(sensorMask_O1, 
-		      sensorMask_O1 + sizeof(sensorMask_O1)/sizeof(int));
-  deque<int> deque_FC5(sensorMask_FC5, 
-		       sensorMask_FC5 + sizeof(sensorMask_FC5)/sizeof(int));
-
-
+  deque<int> deque_F3(sensorMask_F3, sensorMask_F3 + copy);
+  deque<int> deque_FC6(sensorMask_FC6, sensorMask_FC6 + copy);
+  deque<int> deque_P7(sensorMask_P7, sensorMask_P7 + copy);
+  deque<int> deque_T8(sensorMask_T8, sensorMask_T8 + copy);
+  deque<int> deque_F7(sensorMask_F7, sensorMask_F7 + copy);
+  deque<int> deque_F8(sensorMask_F8, sensorMask_F8 + copy);
+  deque<int> deque_T7(sensorMask_T7, sensorMask_T7 + copy);
+  deque<int> deque_P8(sensorMask_P8, sensorMask_P8 + copy);
+  deque<int> deque_AF4(sensorMask_AF4, sensorMask_AF4 + copy);
+  deque<int> deque_F4(sensorMask_F4, sensorMask_F4 + copy);
+  deque<int> deque_AF3(sensorMask_AF3, sensorMask_AF3 + copy);
+  deque<int> deque_O2(sensorMask_O2, sensorMask_O2 + copy);
+  deque<int> deque_O1(sensorMask_O1, sensorMask_O1 + copy);
+  deque<int> deque_FC5(sensorMask_FC5, sensorMask_FC5 + copy);
+ 
   SensorBits["F3"] = deque_F3;
   SensorBits["FC6"] = deque_FC6;
   SensorBits["P7"] = deque_P7;
@@ -100,21 +89,19 @@ void Renderer::setup()
   SensorBits["FC5"] = deque_FC5;
 
   memset(node_data, 0, sizeof(node_data));
-
+  /*
   for(int i = 0; i < 14; ++i)
     {
-      Buffer[i] = new deque<int>(100,0);
+      Buffer[i] = new deque<int>(1000,0);
     }
-
-  for( map< string, deque<int> >::iterator ii = SensorBits.begin(); 
-       ii != SensorBits.end(); ++ii)
+  */
+  for( it = SensorBits.begin(); it != SensorBits.end(); it++)
     {
-      cout << (*ii).first << "\t" ;
+      Buffer[ (*it).first ].assign(1000,0);  
+      cout << (*it).first << "\t" ;
     }
   puts("");
- 
-
-}
+ }
 
 QSize Renderer::sizeHint() const
 {
@@ -127,7 +114,6 @@ void Renderer::paintEvent(QPaintEvent * /* event */)
     Qt::red, Qt::green, Qt::blue, Qt::cyan, Qt::magenta, Qt::yellow, Qt::darkRed,
     Qt::darkGreen, Qt::darkBlue, Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow 
   };
-
   
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
@@ -138,41 +124,46 @@ void Renderer::paintEvent(QPaintEvent * /* event */)
       offset = 0;
     } 
   painter.setPen(pen);
- 
-  for(int i = 0; i < 14; ++i)
-    {
-      Buffer[i]->pop_front();
-    }
-  	
- if(emotiv_fd != 0)
-    {
-      readBuffer();
-      for(int i = 0; i < 14; ++i)
-	{
-	  Buffer[i]->push_back(node_data[i]);
-	}
-    }
- else
-   {
-     for(int i = 0; i < 14; ++i)
-       {
-	 Buffer[i]->push_back(offsets[i]+200);
-       }
-   }
- 
- for(int i = 0; i < 14; ++i)
+  int i = 0;
+  for(it = Buffer.begin(); it != Buffer.end(); it++)
    {
      painter.setPen(colors[i%12]);
-     painter.drawLine(width()-scrollInt,i*35+(((*Buffer[i])[98]-offsets[i])/5),
-		      width(),i*35+(((*Buffer[i])[99])-offsets[i])/5);
+     painter.drawLine(width()-scrollInt,
+		      i*35+(  (  (*it).second[998]-offsets[i]  )/5  ),
+		      width(),
+		      i*35+(  (  (*it).second[999]-offsets[i]  )/5 ) );
+     i++;
    }
 }
 
-
-
 void Renderer::timerEvent(QTimerEvent *event)
 {
-  if (event->timerId() == myTimerId)
+  for(it = Buffer.begin(); it != Buffer.end(); it++)
+    {
+      (*it).second.pop_front();
+    }
+  	
+  if(emotiv_fd != 0)
+    {
+      readBuffer();
+      int i = 0;
+      for(it = Buffer.begin(); it != Buffer.end(); it++)
+	{
+	  (*it).second.push_back(node_data[i]);
+	  i++;
+	}
+    }
+  else
+    {
+      int i = 0;
+      for(it = Buffer.begin(); it != Buffer.end(); it++)
+	{
+	  (*it).second.push_back(offsets[i]+200);
+	  i++;
+	}
+    }
+
+  if (event->timerId() == (*renderer_timer_id))
     {
       ++offset;
       scroll(-scrollInt, 0);
@@ -245,6 +236,8 @@ unsigned char * Renderer::readBuffer()
     {
       decrypt(emotivBuffer, data);
       int j = 0;
+      gyro_x = data[30];
+      gyro_y = data[31];
       for( map< string, deque<int> >::iterator ii = SensorBits.begin(); 
 	   ii != SensorBits.end(); ++ii)
 	{
@@ -256,10 +249,12 @@ unsigned char * Renderer::readBuffer()
 	      level |= ((data[b] >> o) & 1);
 	    } 
 	  node_data[j] = level;
-	  printf("%d\t",level);
-  	  ++j;
+	  j++;
+	  if(print_values)
+	    printf("%d\t",level);
 	}
-      puts("");
+      if(print_values)
+	puts("");
     }
   return 0;
 }
@@ -269,11 +264,11 @@ void Renderer::play_pause()
 {
   if(playing)
     {
-      killTimer(myTimerId);
-      myTimerId = 0;
+      killTimer(*renderer_timer_id);
+      *renderer_timer_id = 0;
     }
   else
-    myTimerId = startTimer(WAIT_TIME);
+    *renderer_timer_id = startTimer(WAIT_TIME);
   playing = !playing;
 }
 
@@ -289,8 +284,8 @@ void Renderer::setKey_Kat()
     "\x4D\x00\x47\x48\x38\x00\x38\x50";
   setKey(katKey);
   static const int Kat_offsets[] = {
-    8220, 8050, 7950, 7980, 8850, 8210, 8690, 
-    8340, 9060, 8570, 8800, 8360, 8740, 7545
+    8120, 7950, 7850, 7880, 8750, 8110, 8590, 
+    8240, 8960, 8470, 8700, 8260, 8640, 7445
   };
   offsets = Kat_offsets;
 }
@@ -301,8 +296,8 @@ void Renderer::setKey_Will()
     "\x42\x31\x00\x39\x48\x38\x00\x37\x50";
   setKey(willKey);
   static const int Will_offsets[] = {
-    7860, 8630, 8100, 8610, 9000, 8500, 8420,
-    8820, 7330, 8920, 7800, 8150, 9180, 8750
+    7760, 8530, 8000, 8510, 8900, 8400, 8320,
+    8720, 7230, 8820, 7700, 8050, 9080, 8650
   };
   offsets = Will_offsets;
 }
@@ -311,14 +306,13 @@ int Renderer::connect_server()
 {
   if(server_connected == 0)
     { 
-      portno = 2000;
       sockfd = socket(AF_INET, SOCK_STREAM, 0);
       if (sockfd < 0) 
         {
 	  printf("ERROR, cannot open socket\n");
 	  return 1;
 	}
-      server = gethostbyname("localhost");//local host 192.168.207.89
+    
       if (server == NULL) {
         printf("ERROR, no such host\n");
         return 1;
@@ -337,9 +331,10 @@ int Renderer::connect_server()
       server_connected = 1; // Use Server to process data
     }
   else if(server_connected == 1)
-    server_connected = 2; // connected but do not use server to process data
-  else
-    server_connected = 1; // connected, use server to process data
+    {
+      ::close(sockfd);
+      server_connected = 0;
+    }
   return 0;
 }
 
@@ -348,4 +343,15 @@ void Renderer::error(const char *msg)
 {
   perror(msg);
 }
+
+void Renderer::accept_options(int port, const char *host)
+{
+  portno = port;
+  server = gethostbyname(host);
+}
 //192.168.206.124
+
+void Renderer::print_value_on_off()
+{
+  print_values = !print_values;
+}
