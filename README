@@ -1,0 +1,6 @@
+WinlabEEG is an open source project aimed at creating a basic Brain Computer Interface using the Emotiv Epoc wireless EEG headset.  
+
+Required Packages:
+Qt4.7
+Libudev
+Libcrypto
