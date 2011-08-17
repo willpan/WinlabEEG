@@ -100,31 +100,27 @@ void gyro_widget::reset_position()
 {
   pos_x = width()/2;
   pos_y = height()/2;
+  refreshPixmap();
 }
 
-/*
-int gyro_widget::action(int x, int y)
+
+int gyro_widget::action()
 {
   
   //  1 = Look left
   //  2 = Look right
   //  3 = look up
   //  4 = look down
-   
-  if( (y > 60) && (y < 500))
-    {
-    if( (x > 0) && (x < 60))
-      return 1;
-    else if( (x > 540) && (x < 600))
-      return 2;
-    }
-  if( (x > 60) && (x < 540))
-    {
-      if( (y > 0) && (y < 60))
-	return 3;
-      if( (y > 500) && (y < 560))
-	return 4;
-    }
-  else return 0;
+  if( pos_x < MARGIN )
+    return 1;
+  else if(pos_x > width() - MARGIN )
+    return 2;
+  else if(pos_y < MARGIN)
+    return 3;
+  else if(pos_y > height() - MARGIN )
+    return 4;
+  else 
+    return 0;
+
 }
-*/
+

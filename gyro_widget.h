@@ -19,16 +19,18 @@ public:
     int gyro_x;
     int gyro_y;
     void read_gyro(int,int);
-
-public slots:
-    void refreshPixmap();
-    void reset_position();
-protected:
-    void paintEvent(QPaintEvent *event);
+    int action();
     int pos_x;
     int pos_y;
 
 
+public slots:
+    void refreshPixmap();
+    void reset_position();
+
+protected:
+    void paintEvent(QPaintEvent *event);
+    
 private:
 
     void drawGrid(QPainter *painter);

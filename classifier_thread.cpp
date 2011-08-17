@@ -18,13 +18,13 @@ void classifier_thread::run()
   map<string, double > mean;
   map<string, double > std_dev;
   
-  outf << "Count,";
+  outf << "Action,Trial,";
   for(it = sensor_data.begin(); it != sensor_data.end(); it++)
       outf << (*it).first << ",";
   outf << endl;
   for(int i = 0; i < 1000; i++)
     {
-      outf << i << ",";
+      outf << "(Action),(Trial),"; 
       for(it = sensor_data.begin(); it != sensor_data.end(); it++)
 	{
 	  outf << (*it).second[i] << ",";
@@ -69,7 +69,17 @@ void classifier_thread::run()
   outf << endl;
   */
   outf.close();
-  
   stopped = true;
+  //~classifier_thread();
 }
-
+/*
+classifier_thread::~classifier_thread()
+{
+  for(map<string, deque<int> >::iterator it = sensor_data.begin();
+      it != sensor_data.end(); it++)
+    {
+      (*it).second.~deque();
+    }
+  sensor_data.~map();
+}
+*/

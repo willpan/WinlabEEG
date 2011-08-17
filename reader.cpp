@@ -28,7 +28,8 @@ Reader::Reader(QWidget *parent)
 
 bool Reader::connect_emotiv()
 {
-   /* Opens Emotiv if Emotiv is only HID Device attached */
+
+  /* Opens Emotiv if Emotiv is only HID Device attached */
   struct udev_device *dev;
   struct udev *udev;
   struct udev_list_entry *devices, *dev_list_entry;

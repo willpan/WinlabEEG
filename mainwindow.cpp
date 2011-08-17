@@ -4,6 +4,7 @@
 mainwindow::mainwindow(QWidget *parent)
   : QWidget(parent)
 {
+  accept_commands = false;
   training = 0;
   setAutoFillBackground(false);
   playing = false;
@@ -20,12 +21,15 @@ mainwindow::mainwindow(QWidget *parent)
   toggle_print        = new QPushButton("Toggle Print");
   training_button     = new QPushButton("Start Training");
   reset_button        = new QPushButton("Reset Gyro Position");
+  commands_button     = new QPushButton("Accept Commands");
   thread = 0;
   setup_page1();
   setup_page2();
   tabs->addTab(page1, "Waveforms");
   tabs->addTab(page2, "Gyro");
-   QObject::connect(timer,SIGNAL(timeout()),
+  start_stop_button->setEnabled(false);
+
+  QObject::connect(timer,SIGNAL(timeout()),
 		   reader,SLOT(read_buffer()));
   QObject::connect(timer,SIGNAL(timeout()),
 		   this,SLOT(update_widgets()));
@@ -39,8 +43,10 @@ mainwindow::mainwindow(QWidget *parent)
 		   this, SLOT(start_stop_reader()));
   QObject::connect(toggle_print, SIGNAL(clicked()),
 		   reader, SLOT(toggle_print()));
-  QObject::connect(reset_button, SLOT(clicked()),
+  QObject::connect(reset_button, SIGNAL(clicked()),
 		   gyro, SLOT(reset_position()));
+  QObject::connect(commands_button, SIGNAL(clicked()),
+		   this, SLOT(commands()));
   
   setup_mainwindow();
   this->setLayout(main_layout);
@@ -61,6 +67,7 @@ void mainwindow::setup_page2()
 
   QHBoxLayout * buttons = new QHBoxLayout;
   buttons->addWidget(reset_button);
+  buttons->addWidget(commands_button);
   buttons->addStretch();
   page2_layout->addLayout(buttons);
 
@@ -111,13 +118,13 @@ void mainwindow::start_stop_reader()
 
 void mainwindow::thread_do_stuff()
 {
-  if(thread == 0)
-    {
-      thread = new classifier_thread;
-      training_button->setEnabled(false);
-      training = true;
-      cout << "start training\n";
-    }
+  if(thread != 0)
+    thread->~classifier_thread();
+  thread = 0;
+  thread = new classifier_thread;
+  training_button->setEnabled(false);
+  training = true;
+  cout << "start training\n";
 }
 
 void mainwindow::connect_emotiv()
@@ -133,6 +140,17 @@ void mainwindow::update_widgets()
   renderer->update();
   gyro->read_gyro(reader->gyro_x,reader->gyro_y);
   gyro->refreshPixmap();
+  if(accept_commands)
+    {
+      static int last_action = -1;
+      static int curr_action;
+      curr_action = gyro->action();
+      if( curr_action != last_action )
+	{
+	  do_action(curr_action);
+	  last_action = curr_action;
+	}
+    }
   if(training)
     {
       static int counter = 0;
@@ -161,6 +179,7 @@ void mainwindow::connect_will()
   reader->set_key_Will();
   renderer->offsets = reader->offsets;
   start_stop_reader();
+  start_stop_button->setEnabled(true);
 }
 
 void mainwindow::connect_kat()
@@ -169,4 +188,39 @@ void mainwindow::connect_kat()
   reader->set_key_Kat();
   renderer->offsets = reader->offsets;
   start_stop_reader();
+  start_stop_button->setEnabled(true);
+}
+
+void mainwindow::commands()
+{
+  accept_commands = !accept_commands;
+  if(accept_commands)
+    {
+      commands_button->setText("Stop Commands");
+    }
+  else
+    {
+      commands_button->setText("Accept Commands");
+    }
+}
+
+void mainwindow::do_action(int action)
+{
+  switch(action)
+    {
+    case 0:
+      break;
+    case 1:
+      system("./commands.sh 1");
+      break;
+    case 2:
+      system("./commands.sh 2");
+      break;
+    case 3:
+      system("./commands.sh 3");
+      break;
+    case 4:
+      system("./commands.sh 4");
+      break;
+    }
 }
