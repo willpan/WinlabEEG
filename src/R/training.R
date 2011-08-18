@@ -8,6 +8,12 @@ nn_rang <- 0.1
 
 alpha <- 5
 
+test.cl <- function(true, pred) {
+	true <- max.col(true)
+	cres <- max.col(pred)
+	table(true, cres, useNA = "always")
+}
+
 assemble_trial <- function (tdata, c1_data, c2_data, curTrial, samp){
 	len <- length(tdata)
 	for (i in 1:(len / 2)){
@@ -78,23 +84,33 @@ run_rcspa <- function (c1_data, c2_data){
 		if (sum(Scores_C1[i,]) < sum(Scores_C2[i,])) OVERALL_SCORE[i] <- "1"
 		if (sum(Scores_C1[i,]) == sum(Scores_C2[i,])) OVERALL_SCORE[i] <- "0"
 	}
+	result <- test.cl(class.ind(classLabels), class.ind(OVERALL_SCORE))
 	
-	return (OVERALL_SCORE)
+	return (sum(diag(result))/12)
 }
 
+get_ave_res <- function (d1, d2){
+	T_AVE <- run_rcspa(d1,d2)
+	for (j in 2:100) T_AVE <- T_AVE * (j - 1) / j + run_rcspa(d1,d2) / j
+	return (T_AVE)
+}
 
 # Actions
 # larm, lclench, lpivot, pull, push, rarm, rclench, rpivot
 data <- read.csv(file="~/WinlabEEG/training_data/trainData.csv",head=TRUE,sep=",")
 
-larm_data <- data[(data$Action == "larm"),]
-rarm_data <- data[(data$Action == "rarm"),]
+res <- rep(0,4)
 
-samp <- seq(from = 1, to = 500, by = 10)
+res[1] <- get_ave_res(data[(data$Action == "larm"),], data[(data$Action == "rarm"),])
+res[2] <- get_ave_res(data[(data$Action == "lpivot"),], data[(data$Action == "rpivot"),])
+res[3] <- get_ave_res(data[(data$Action == "lclench"),], data[(data$Action == "rclench"),])
+res[4] <- get_ave_res(data[(data$Action == "pull"),], data[(data$Action == "push"),])
 
-training_data <- list(A = as.matrix(t(larm_data[samp,3:16])), B = as.matrix(t(larm_data[samp + 500, 3:16])), C = as.matrix(t(larm_data[samp + 1000, 3:16])), D = as.matrix(t(larm_data[samp + 1500, 3:16])), E = as.matrix(t(larm_data[samp + 2000, 3:16])), F = as.matrix(t(larm_data[samp + 2500, 3:16])), I = as.matrix(t(rarm_data[samp,3:16])), J = as.matrix(t(rarm_data[samp + 500, 3:16])), K = as.matrix(t(rarm_data[samp + 1000, 3:16])), L = as.matrix(t(rarm_data[samp + 1500, 3:16])), M = as.matrix(t(rarm_data[samp + 2000, 3:16])), N = as.matrix(t(rarm_data[samp + 2500, 3:16])), O = as.matrix(t(larm_data[samp + 1, 3:16])), P = as.matrix(t(rarm_data[samp + 1, 3:16])))
+#samp <- seq(from = 1, to = 500, by = 10)
 
-T <- run_rcspa(larm_data, rarm_data)
+#training_data <- list(A = as.matrix(t(larm_data[samp,3:16])), B = as.matrix(t(larm_data[samp + 500, 3:16])), C = as.matrix(t(larm_data[samp + 1000, 3:16])), D = as.matrix(t(larm_data[samp + 1500, 3:16])), E = as.matrix(t(larm_data[samp + 2000, 3:16])), F = as.matrix(t(larm_data[samp + 2500, 3:16])), I = as.matrix(t(rarm_data[samp,3:16])), J = as.matrix(t(rarm_data[samp + 500, 3:16])), K = as.matrix(t(rarm_data[samp + 1000, 3:16])), L = as.matrix(t(rarm_data[samp + 1500, 3:16])), M = as.matrix(t(rarm_data[samp + 2000, 3:16])), N = as.matrix(t(rarm_data[samp + 2500, 3:16])), O = as.matrix(t(larm_data[samp + 1, 3:16])), P = as.matrix(t(rarm_data[samp + 1, 3:16])))
+
+#T <- run_rcspa(larm_data, rarm_data)
 
 #test.cl <- function(true, pred) {
 #	true <- max.col(true)
