@@ -23,16 +23,18 @@ public:
     int pos_x;
     int pos_y;
 
-
 public slots:
     void refreshPixmap();
     void reset_position();
+    void set_x(int);
+    void set_y(int);
 
 protected:
     void paintEvent(QPaintEvent *event);
     
 private:
-
+    double multiplier_x;
+    double multiplier_y;
     void drawGrid(QPainter *painter);
     void drawSquare(QPainter *painter);
     QPixmap pixmap;

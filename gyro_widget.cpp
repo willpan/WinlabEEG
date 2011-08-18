@@ -14,6 +14,8 @@ gyro_widget::gyro_widget(QWidget *parent)
   gyro_y = 0;
   pos_x = 300;
   pos_y = 280;
+  multiplier_x = 2;
+  multiplier_y = 2;
 }
 
 QSize gyro_widget::sizeHint() const
@@ -32,14 +34,16 @@ void gyro_widget::refreshPixmap()
   pixmap = QPixmap(size());
   pixmap.fill(this, 0, 0);
  
+  
   if(abs(gyro_x) < 2)
     gyro_x = 0;
   else
-    gyro_x = 2*gyro_x;
+    gyro_x = multiplier_x * gyro_x;
   if(abs(gyro_y) < 2)
     gyro_y = 0;
   else 
-    gyro_y = 2*gyro_y;
+    gyro_y = multiplier_y * gyro_y;
+  
   pos_x = (pos_x - gyro_x < 5) ? 5 : (pos_x - gyro_x);
   if(pos_x > width() - 5 )
     pos_x = width() - 5;
@@ -52,28 +56,7 @@ void gyro_widget::refreshPixmap()
   drawGrid(&painter);
   drawSquare(&painter);
   update();
-  /*
-  int which_action = action(pos_y,pos_y);
-  switch(which_action)
-    {
-    case 1:
-      system("foo.sh 1");
-      break;
-    case 2:
-      system("foo.sh 2");
-      break;
-    case 3:
-      system("foo.sh 3");
-      break;
-    case 4:
-      system("foo.sh 4");
-      break;
-    case 0:
-      system("foo.sh 4");
-      break;
-    }
-  */
- }
+}
 
 void gyro_widget::read_gyro(int new_x, int new_y)
 {
@@ -124,3 +107,12 @@ int gyro_widget::action()
 
 }
 
+void gyro_widget::set_x(int x)
+{
+  multiplier_x = (double)x/5;
+}
+
+void gyro_widget::set_y(int y)
+{
+  multiplier_y = (double)y/5;
+}

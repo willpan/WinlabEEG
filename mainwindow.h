@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <fstream>
 #include <iostream>
+#include <QSlider>
 #include "reader.h"
 #include "renderer.h"
 #include "classifier_thread.h"

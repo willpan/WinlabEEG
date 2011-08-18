@@ -62,6 +62,12 @@ void mainwindow::setup_page1()
 
 void mainwindow::setup_page2()
 {
+  QSlider *sliderx = new QSlider(Qt::Horizontal);
+  QSlider *slidery = new QSlider(Qt::Horizontal);
+  sliderx->setRange(1,20);
+  slidery->setRange(1,20);
+  QLabel * xlabel = new QLabel("Gyro sensitivity (X, Y):  ");
+
   QVBoxLayout * page2_layout = new QVBoxLayout;
   page2_layout->addWidget(gyro);
 
@@ -69,6 +75,17 @@ void mainwindow::setup_page2()
   buttons->addWidget(reset_button);
   buttons->addWidget(commands_button);
   buttons->addStretch();
+  buttons->addWidget(xlabel);
+  buttons->addWidget(sliderx);
+  buttons->addWidget(slidery);
+  
+  QObject::connect(sliderx,SIGNAL(valueChanged(int)),
+		   gyro, SLOT(set_x(int)));
+  QObject::connect(slidery,SIGNAL(valueChanged(int)),
+		   gyro, SLOT(set_y(int)));
+  sliderx->setValue(10);
+  slidery->setValue(10);
+
   page2_layout->addLayout(buttons);
 
   page2->setLayout(page2_layout);
