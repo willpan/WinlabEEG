@@ -3,7 +3,6 @@
 classifier_thread::classifier_thread()
 {
   stopped = false;
-  
 }
 
 void classifier_thread::run()
@@ -70,16 +69,7 @@ void classifier_thread::run()
   */
   outf.close();
   stopped = true;
-  //~classifier_thread();
+  
 }
-/*
-classifier_thread::~classifier_thread()
-{
-  for(map<string, deque<int> >::iterator it = sensor_data.begin();
-      it != sensor_data.end(); it++)
-    {
-      (*it).second.~deque();
-    }
-  sensor_data.~map();
-}
-*/
+
+

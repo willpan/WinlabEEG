@@ -6,7 +6,7 @@
 gyro_widget::gyro_widget(QWidget *parent)
     : QLabel(parent)
 {
-  setBackgroundRole(QPalette::Dark);
+  // setBackgroundRole(QPalette::Dark);
   setAutoFillBackground(true);
   setSizePolicy(QSizePolicy::Expanding, 
 		QSizePolicy::Expanding);
@@ -66,11 +66,11 @@ void gyro_widget::read_gyro(int new_x, int new_y)
 
 void gyro_widget::drawGrid(QPainter *painter)
 {
-  painter->setPen(Qt::black);
-  painter->drawRect( 0, MARGIN, MARGIN, height() - 2*MARGIN);   //left
-  painter->drawRect( MARGIN, 0, width() - 2*MARGIN, MARGIN);   //top
-  painter->drawRect( width() - MARGIN, MARGIN, MARGIN, height() - 2*MARGIN); //right
-  painter->drawRect( MARGIN, height() - MARGIN, width() - 2*MARGIN, MARGIN); //bottom
+  painter->setPen(QPalette::Dark);
+  painter->fillRect( 0, 0, MARGIN, height(), Qt::gray);   //left
+  //painter->drawRect( MARGIN, 0, width() - 2*MARGIN, MARGIN);   //top
+  painter->fillRect( width() - MARGIN, 0, MARGIN, height(), Qt::gray); //right
+  //painter->drawRect( MARGIN, height() - MARGIN, width() - 2*MARGIN, MARGIN); //bottom
 }
 
 void gyro_widget::drawSquare(QPainter *painter)
@@ -98,13 +98,7 @@ int gyro_widget::action()
     return 1;
   else if(pos_x > width() - MARGIN )
     return 2;
-  else if(pos_y < MARGIN)
-    return 3;
-  else if(pos_y > height() - MARGIN )
-    return 4;
-  else 
-    return 0;
-
+  return 0;
 }
 
 void gyro_widget::set_x(int x)

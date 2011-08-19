@@ -11,6 +11,8 @@
 #include "classifier_thread.h"
 #include "gyro_widget.h"
 
+using namespace std;
+
 class mainwindow : public QWidget
 {
   Q_OBJECT
@@ -36,7 +38,7 @@ class mainwindow : public QWidget
   void setup_page1();
   void setup_page2();
   void setup_mainwindow();
-  void do_action(int);
+  void do_action();
   QPushButton * connect_will_button;
   QPushButton * connect_kat_button;
   QPushButton * start_stop_button;
@@ -54,6 +56,8 @@ class mainwindow : public QWidget
   QTimer * timer;
   bool playing;
   bool training;
+  void train();
   bool accept_commands;
+  
  
 };

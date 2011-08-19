@@ -89,6 +89,7 @@ void mainwindow::setup_page2()
   page2_layout->addLayout(buttons);
 
   page2->setLayout(page2_layout);
+  gyro->refreshPixmap();
 }
 
 void mainwindow::setup_mainwindow()
@@ -159,34 +160,11 @@ void mainwindow::update_widgets()
   gyro->refreshPixmap();
   if(accept_commands)
     {
-      static int last_action = -1;
-      static int curr_action;
-      curr_action = gyro->action();
-      if( curr_action != last_action )
-	{
-	  do_action(curr_action);
-	  last_action = curr_action;
-	}
+      do_action();
     }
   if(training)
     {
-      static int counter = 0;
-      static const char * sensor_names[] = {"AF3","AF4","F3","F4","F7",
-					    "F8","FC5","FC6","O1","O2",
-					    "P7","P8","T7","T8"};
-      for(int i = 0; i < 14; i++)
-	{
-	  thread->sensor_data[sensor_names[i]].push_back(reader->node_data[i]);
-	}
-      counter++;
-      if(counter == 1000)
-	{
-	  training = false;
-	  counter = 0;
-	  training_button->setEnabled(true);
-	  thread->start();
-	  cout << "end training\n";
-	}
+      train();
     }
 }
 
@@ -221,23 +199,100 @@ void mainwindow::commands()
     }
 }
 
-void mainwindow::do_action(int action)
+void mainwindow::do_action()
 {
-  switch(action)
+  static ofstream output;
+  static int count = 0;
+  static int last_action = -1;
+  static int curr_action;
+  curr_action = gyro->action();
+
+  if( curr_action == 0 ) //User is looking forward
     {
-    case 0:
-      break;
-    case 1:
-      system("./commands.sh 1");
-      break;
-    case 2:
-      system("./commands.sh 2");
-      break;
-    case 3:
-      system("./commands.sh 3");
-      break;
-    case 4:
-      system("./commands.sh 4");
-      break;
+      if(count == 0)
+	{
+	  output.open("./scripts/temp.csv");
+	  output << "AF3,F4,F3,F4,F7,F8,FC5,FC6,O1,O2,P7,P8,T7,T8" << endl;
+	}
+      count++;
+      if(count % 5 == 0)
+	{
+	  for(int i = 0; i < 14; i++)
+	    {
+	      output << reader->node_data[i] << ",";
+	    }
+	  output << endl;
+	}
+      if(count == 100)
+	{
+	  output.close();
+	  system("./scripts/ *****************************  &");
+	  count = 0; 
+	}
+    } 
+  else if( curr_action == 1 && last_action != curr_action)
+    {
+      system("./scripts/commands.sh 1 &");
+      count = 0;
+      if(output.is_open())
+	{
+	  output.close();
+	  count = 0;
+	}
+      last_action = curr_action;
+    }
+  else if( curr_action == 2 && last_action != curr_action)
+    {
+      system("./scripts/commands.sh 2 &");
+      count = 0;
+      if(output.is_open())
+	{
+	  output.close();
+	  count = 0;
+	}
+      last_action = curr_action;
+    }
+  /*  if( curr_action != last_action )
+      {
+      switch(curr_action)
+	{
+	case 0:
+	  break;
+	case 1:
+	  system("./scripts/commands.sh 1");
+	  break;
+	case 2:
+	  system("./scripts/commands.sh 2");
+	  break;
+	case 3:
+	  system("./scripts/commands.sh 3");
+	  break;
+	case 4:
+	  system("./scripts/commands.sh 4");
+	  break;	  
+	}
+      last_action = curr_action;    
+    }
+  */
+}
+
+void mainwindow::train()
+{
+  static int counter = 0;
+  static const char * sensor_names[] = {"AF3","AF4","F3","F4","F7",
+					    "F8","FC5","FC6","O1","O2",
+					    "P7","P8","T7","T8"};
+  for(int i = 0; i < 14; i++)
+    {
+      thread->sensor_data[sensor_names[i]].push_back(reader->node_data[i]);
+    }
+  counter++;
+  if(counter == 1000)
+    {
+      training = false;
+      counter = 0;
+      training_button->setEnabled(true);
+      thread->start();
+      cout << "end training\n";
     }
 }
