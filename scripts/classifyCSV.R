@@ -11,7 +11,7 @@ numObjs <- 7
 writeLines(sprintf("CSV FILE: %s", paste(args[6],sep="")))
 trial <- read.csv(file=paste(args[6],sep=""),head=TRUE,sep=",")#[,3:16]
 trial <- t(trial)
-trial <- trial [-c(dim(trial)[1], 1, 2),]#,seq(from = 1, to = 499, by = 20) + 500*sample(0:1,1) + sample(0:9,1)]
+trial <- trial [-c(dim(trial)[1]]#,seq(from = 1, to = 499, by = 20) + 500*sample(0:1,1) + sample(0:9,1)]
 trial <- matrix(as.numeric(trial), dim(trial)[1], dim(trial)[2])#as.matrix(t(trial)
 
 decisions <- rep(0,numObjs)
