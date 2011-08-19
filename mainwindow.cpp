@@ -226,13 +226,13 @@ void mainwindow::do_action()
       if(count == 100)
 	{
 	  output.close();
-	  system("./scripts/ *****************************  &");
+	  system("./scripts/runClassifier.bash ./scripts/temp.csv &");
 	  count = 0; 
 	}
     } 
   else if( curr_action == 1 && last_action != curr_action)
     {
-      system("./scripts/commands.sh 1 &");
+      system("./scripts/runCmd.bash 3 &");
       count = 0;
       if(output.is_open())
 	{
@@ -243,7 +243,7 @@ void mainwindow::do_action()
     }
   else if( curr_action == 2 && last_action != curr_action)
     {
-      system("./scripts/commands.sh 2 &");
+      system("./scripts/runCmd.bash 4 &");
       count = 0;
       if(output.is_open())
 	{
