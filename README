@@ -1,24 +1,6 @@
-This focus of this project is to create an open C/C++ library for processing raw EEG data.  Our current testbed is the Emotiv EPOC, which we are currently attempting to decipher.
+WinlabEEG is an open source project aimed at creating a basic Brain Computer Interface using the Emotiv Epoc wireless EEG headset.  
 
-Renderer uses the Qt C++ Language extension so make sure you get that first.  Then run the following commands
-
-qmake -project
-qmake
-Add -ludev and -lcrypto to LIBS in Makefile
-make
-
-If Makefile is already there just run make
-
-To use:
-hit connect button, then the one you want.
-if switching, hit connect again and then select headset.
-
-Required libraries:
-Udev
-Openssl
-
-People Who's code we borrowed : 
-Alan Ott - udev stuff
-jrupac - getting openssl to work
-
-
+Required Packages:
+Qt4.7
+Libudev
+Libcrypto

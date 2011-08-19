@@ -17,10 +17,11 @@ class classifier_thread : public QThread
 
  public:
   classifier_thread();
+  //~classifier_thread();
   volatile bool stopped;
   void stop();
   map< string , deque<int> > sensor_data;
-
+ 
  protected:
   void run();
   

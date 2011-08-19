@@ -1,17 +1,12 @@
-#include "emotiv.h"
+#include <QApplication>
+#include "mainwindow.h"
 
-int main()
+int main(int argc, char *argv[])
 {
-	emotiv myheadset;
-	unsigned char key[] = "\x31\x00\x39\x54\x38\x10\x37\x42\x31\x00\x39\x48\x38\x00\x37\x50";
-	myheadset.setKey(key);
+  QApplication app(argc, argv);
+  mainwindow MainProgram;
+  MainProgram.show();
+  //MainProgram.gyro->show();
+  return app.exec();
 
-
-	while(1)
-	{
-		myheadset.readBuffer();
-	}
-
-	
-	return 0;
 }
