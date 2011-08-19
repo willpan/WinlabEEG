@@ -1,13 +1,10 @@
 #! /bin/bash
 
 . ~/.bashrc
-<<<<<<< HEAD
-=======
+
 export ROS_MASTER_URI=http://192.168.207.2:11311
 export ROS_HOSTNAME=william-Q430-Q530
 export ROS_IP=localhost
-
->>>>>>> 8752b43b1ba9af2d6b2bd85b3947795a6e4e633f
 
 case $1 in
 	"1")
