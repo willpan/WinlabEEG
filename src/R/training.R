@@ -126,29 +126,37 @@ custom_test <- function(d1_data, d2_data, csp_objs, numIter, inter){
 	return (oscores)
 }
 
+write_list.csv <- function(slist, prefix, floc){
+	len <- length(slist)
+	for (i in 1:len){
+		write.csv(slist[[i]], paste(floc, "/", prefix, i, ".csv", sep=""))
+	}
+}
+
 write_out.csv <- function(curObj, floc){
-	system(paste("if [ ! -e ", floc, " ]]; then mkdir ", floc, "; fi", sep = ""))
+	system(paste("if [ ! -e ", floc, " ]; then mkdir ", floc, "; else rm ", floc, "/*.csv; fi", sep = ""))
 	WS <- curObj$WS
 	FDA <- curObj$FDA
 	labels <- curObj$Labels
 	Zs <- curObj$Zs
-	write.csv(WS[[1]], paste(floc, "/W1.csv", sep=""))
-	write.csv(WS[[2]], paste(floc, "/W2.csv", sep=""))
-	write.csv(WS[[3]], paste(floc, "/W3.csv", sep=""))
-	write.csv(WS[[4]], paste(floc, "/W4.csv", sep=""))
-	write.csv(WS[[5]], paste(floc, "/W5.csv", sep=""))
-	write.csv(FDA[[1]], paste(floc, "/FDA1.csv", sep=""))
-	write.csv(FDA[[2]], paste(floc, "/FDA2.csv", sep=""))
-	write.csv(FDA[[3]], paste(floc, "/FDA3.csv", sep=""))
-	write.csv(FDA[[4]], paste(floc, "/FDA4.csv", sep=""))
-	write.csv(FDA[[5]], paste(floc, "/FDA5.csv", sep=""))
+	write_list.csv(WS, "W", floc)
+	write_list.csv(FDA, "FDA", floc)
+	write_list.csv(Zs, "Z", floc)
 	write.csv(labels, paste(floc, "/Labels.csv", sep=""))
-	write.csv(Zs[[1]], paste(floc, "/Z1.csv", sep=""))
-	write.csv(Zs[[1]], paste(floc, "/Z2.csv", sep=""))
-	write.csv(Zs[[1]], paste(floc, "/Z3.csv", sep=""))
-	write.csv(Zs[[1]], paste(floc, "/Z4.csv", sep=""))
-	write.csv(Zs[[1]], paste(floc, "/Z5.csv", sep=""))
 }
+
+write_list.csp <- function (objList, floc){
+	for (i in 1:length(objList)) write_out.csv(objList[[i]], paste(floc, i, sep=""))
+}
+
+search_msg <- function (numIter){
+	writeLines(sprintf("Searching for Object #%s...", numIter))
+}
+
+found_msg <- function (numIter){
+	writeLines(sprintf("Found Object #%s",numIter))
+}
+
 
 # Actions
 # larm, lclench, lpivot, pull, push, rarm, rclench, rpivot
@@ -156,40 +164,35 @@ data <- read.csv(file="~/WinlabEEG/training_data/trainData.csv",head=TRUE,sep=",
 dataLarm <- read.csv(file="~/WinlabEEG/training_data/trainDataLarm4.csv",head=TRUE,sep=",")
 dataRarm <- read.csv(file="~/WinlabEEG/training_data/trainDataRarm4.csv",head=TRUE,sep=",")
 
-#res <- rep(0,4)
-#res[1] <- get_ave_res(data[(data$Action == "larm"),], data[(data$Action == "rarm"),])
-#res[2] <- get_ave_res(data[(data$Action == "lpivot"),], data[(data$Action == "rpivot"),])
-#res[3] <- get_ave_res(data[(data$Action == "lclench"),], data[(data$Action == "rclench"),])
-#res[4] <- get_ave_res(data[(data$Action == "pull"),], data[(data$Action == "push"),])
+numObjs <- 7
+numIter <- 200
+minAcc <- 0.75
 
-curObj1 <- run_rcspa(data[(data$Action == "larm"),], data[(data$Action == "rarm"),])
-curObj2 <- run_rcspa(data[(data$Action == "larm"),], data[(data$Action == "rarm"),])
-curObj3 <- run_rcspa(data[(data$Action == "larm"),], data[(data$Action == "rarm"),])
+object_list <- vector("list", numObjs)
+for (i in 1:numObjs) object_list[[i]] <- run_rcspa(data[(data$Action == "larm"),], data[(data$Action == "rarm"),])
+
 samp <- seq(from = 1, to = 499, by = 10)
-scores <- matrix(rep(0, 150), 150, 3)
 
-
-for (i in 1:150){
-	x <- sample(0:1, 1)
-	siter <- sample(0:9, 1)
-	trial1 <- t(dataLarm[samp + siter + 500*x, 3:16])
-	trial2 <- t(dataRarm[samp + siter + 500*x, 3:16])
-	
-	dec11 <- get_rcspa_decision(trial1, curObj1$WS, curObj1$FDA, curObj1$Labels, curObj1$Zs)
-	dec12 <- get_rcspa_decision(trial2, curObj1$WS, curObj1$FDA, curObj1$Labels, curObj1$Zs)
-
-	dec21 <- get_rcspa_decision(trial1, curObj2$WS, curObj2$FDA, curObj2$Labels, curObj2$Zs)
-	dec22 <- get_rcspa_decision(trial2, curObj2$WS, curObj2$FDA, curObj2$Labels, curObj2$Zs)
-
-	dec31 <- get_rcspa_decision(trial1, curObj3$WS, curObj3$FDA, curObj3$Labels, curObj3$Zs)
-	dec32 <- get_rcspa_decision(trial2, curObj3$WS, curObj3$FDA, curObj3$Labels, curObj3$Zs)
-	
-	scores[i,1] <- get_score(dec11, dec12)
-	scores[i,2] <- get_score(dec21, dec22)
-	scores[i,3] <- get_score(dec31, dec32)
+k <- 0
+while (k < numObjs){
+	search_msg(k + 1)
+	curObj <- run_rcspa(data[(data$Action == "larm"),], data[(data$Action == "rarm"),])
+	scores <- rep(0, numIter)
+	for (i in 1:numIter){
+		x <- sample(0:1,1)
+		siter <- sample(0:9, 1)
+		trial1 <- t(dataLarm[samp + siter + 500*x,3:16])
+		trial2 <- t(dataRarm[samp + siter + 500*x,3:16])
+		dec1 <- get_rcspa_decision(trial1, curObj$WS, curObj$FDA, curObj$Labels, curObj$Zs)
+		dec2 <- get_rcspa_decision(trial2, curObj$WS, curObj$FDA, curObj$Labels, curObj$Zs)
+		scores[i] <- get_score(dec1, dec2)
+	}
+	curScore <- sum(scores) / (2*numIter)
+	if (curScore > minAcc){
+		object_list[[k+1]] <- curObj
+		found_msg(k + 1)
+		k <- k + 1
+	}
 }
 
-oscore <- c(sum(scores[,1]), sum(scores[,2]), sum(scores[,3])) / (2*150)
-writeLines(sprintf("curObj1 :: %s\ncurObj2 :: %s\ncurObj3 :: %s", oscore[1], oscore[2], oscore[3]))
-
-#training_data <- list(A = as.matrix(t(larm_data[samp,3:16])), B = as.matrix(t(larm_data[samp + 500, 3:16])), C = as.matrix(t(larm_data[samp + 1000, 3:16])), D = as.matrix(t(larm_data[samp + 1500, 3:16])), E = as.matrix(t(larm_data[samp + 2000, 3:16])), F = as.matrix(t(larm_data[samp + 2500, 3:16])), I = as.matrix(t(rarm_data[samp,3:16])), J = as.matrix(t(rarm_data[samp + 500, 3:16])), K = as.matrix(t(rarm_data[samp + 1000, 3:16])), L = as.matrix(t(rarm_data[samp + 1500, 3:16])), M = as.matrix(t(rarm_data[samp + 2000, 3:16])), N = as.matrix(t(rarm_data[samp + 2500, 3:16])), O = as.matrix(t(larm_data[samp + 1, 3:16])), P = as.matrix(t(rarm_data[samp + 1, 3:16])))
+#training_data <- list(A = as.matrix(t(larm_data[samp,3:16])), B = as.matrix(t(larm_data[samp + 500, 3:16])), C = as.matrix(t(larm_data[samp + 1000, 3:16])), D = as.matrix(t(larm_data[samp + 1500, 3:16])), E = as.matrix(t(larm_data[samp + 2000, 3:16])), F = as.matrix(t(larm_data[samp + 2500, 3:16])), I = as.matrix(t(rarm_data[samp,3:16])), J = as.matrix(t(rarm_data[samp + 500, 3:16])), K = as.matrix(t(rarm_data[samp + 1000, 3:16])), L = as.matrix(t(rarm_data[samp + 1500, 3:16])), M = as.matrix(t(rarm_data[samp + 2000, 3:16])), N = as.matrix(t(rarm_data[samp + 2500, 3:16])), O = as.matrix(t(larm_data[samp + 1, 3:16])), P = as.matrix(t(rarm_data[samp + 1, 3:16])))search_msg(k + 1)

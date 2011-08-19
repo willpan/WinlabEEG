@@ -1,6 +1,7 @@
 #! /bin/bash
 
-. ~/WinlabEEG/scripts/variables.bash
+#. ~/WinlabEEG/scripts/variables.bash
+SCRIPTS_DIR="~/WinlabEEG/scripts"
 
 result=`Rscript $SCRIPTS_DIR/classifyCSV.R $1`
 result=`echo $result | awk 'BEGIN{ FS = "=" }{if ( $0 ~ FINAL_DECISION ) { print $2 }}'`
