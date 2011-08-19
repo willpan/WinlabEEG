@@ -79,6 +79,18 @@ get_nnc_class <- function (testVector, featureVectors){
 	return(list(DMAX = max_dist, DMIN = min_dist))
 }
 
+get_nnc_rcspa_single <- function (testVector, featureVectors, featureVectorLabels){
+	numFV <- length(featureVectors)
+	ind_classone <- seq_along(featureVectorLabels)[featureVectorLabels == "1"]
+	C1_metrics <- get_nnc_class(testVector, featureVectors[ind_classone])
+	C2_metrics <- get_nnc_class(testVector, featureVectors[-ind_classone])
+	DMAX <- max(C1_metrics$DMAX, C2_metrics$DMAX)
+	DMIN <- min(C1_metrics$DMIN, C2_metrics$DMIN)
+	DE_C1 <- (C1_metrics$DMIN - DMIN) / (DMAX - DMIN)
+	DE_C2 <- (C2_metrics$DMIN - DMIN) / (DMAX - DMIN)
+	return (list(D_C1 = DE_C1, D_C2 = DE_C2))
+}
+
 get_nnc_rcspa <- function (testVector, featureVectors, featureVectorLabels){
 	numFV <- dim(featureVectors)[1]
 	ind_classone <- seq_along(featureVectorLabels)[featureVectorLabels == "1"]
@@ -119,15 +131,12 @@ fda_components <- function (data_mat, dataTrials){
 	SW <- S1_var + S2_var
 	SB <- (S1_mean - S2_mean) %*% t(S1_mean - S2_mean)
 
-	#return(list(S1VAR=S1_var, S2VAR=S2_var, SW=SW, SB=SB))
-
 	v <- solve(SW) %*% (S1_mean - S2_mean)
 	return(v)
 }
 
 ica_components <- function (trainingData, number_components){
 	scaling <- scale(trainingData, scale = FALSE)
-	#trainingData <- trainingData - scaling
 	ica <- fastICA(trainingData, number_components, alg.typ = "parallel", fun = "logcosh", alpha = 1, method = "C", row.norm = FALSE, maxit = 200, tol = 0.0001)
 	return (list(centering = scaling, whitening = ica$K, unmixing = ica$W, mixing = ica$A))
 }
@@ -162,7 +171,6 @@ csp_components <- function (trainingTrials, trainingTrialClasses, gamma, alpha){
 	Lamda <- diag(eig$values^(-1/2))
 	U <- eig$vectors
 	B <- make_eigenvalues_positive(eigen(Lamda %*% t(U) %*% sum_classone %*% U %*% Lamda))$vectors
-	#return (list(B = B, Lamda = Lamda, U = U, Sigma = sigma, Sigma_1 = sum_classone))
 	W_0 <- t(B) %*% Lamda %*% t(U)
 	W <- W_0 [, c(1:alpha, (numchannels - (alpha - 1)):numchannels)]
 	return (W)
@@ -174,7 +182,6 @@ pca_fe <- function (testingData, pcaComp){
 	testingData <- as.numeric(as.matrix(testingData))
 	testingData <- testingData - pcaComp$centering [1,]
 	testingData <- testingData %*% pcaComp$whitening
-	#testingData <- pcaComp$whitening %*% testingData
 	return (testingData)
 }
 
@@ -215,8 +222,6 @@ stacking_fe <- function (classifier_probs) {
 	return (fv)
 }
 
-#return (list(Sigma_1 = sum_classone, Sigma_2 = sum_classtwo, Lambda = diag(eig$values), U = eig$vectors))
-
 # MUST HAVE LAMDA BE ALL POSITIVE!
 rcspa_fe <- function (testingTrial, W){
 	X <- t(W) %*% testingTrial
@@ -243,8 +248,26 @@ fda_fe <- function (testingTrial, V){
 
 fda_fe_mat <- function(testingTrials, V){
 	numTrials <- dim(testingTrials)[1]
-	numFeats <- 1#dim(testingTrials)[2]
+	numFeats <- 1 #dim(testingTrials)[2]
 	features <- matrix(rep(0, numTrials*numFeats), numTrials, numFeats)
 	for (i in 1:numTrials) features[i,] <- fda_fe(testingTrials, V)
 	return(features)
+}
+
+# Obtain_Decision
+get_rcspa_decision <- function (testingTrial, Ws, FDA_Vs, classLabels, trainZs){
+	testingTrial <- as.matrix(testingTrial)
+	Scores_C1 <- rep(0, length(Ws))
+	Scores_C2 <- Scores_C1
+	for (i in 1:length(Ws)){
+		curTestX <- rcspa_fe (testingTrial, Ws[[i]])
+		curTestZ <- curTestX %*% FDA_Vs[[i]]
+		getDE <- get_nnc_rcspa_single(curTestZ, trainZs[[i]], classLabels)
+		Scores_C1[i] <- getDE$D_C1
+		Scores_C2[i] <- getDE$D_C2
+	}
+	dec <- "0"
+	if (sum(Scores_C1) > sum(Scores_C2)) dec <- "2"
+	if (sum(Scores_C1) < sum(Scores_C2)) dec <- "1"
+	return (dec)
 }
